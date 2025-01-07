@@ -131,6 +131,28 @@ function Mines() {
 
   return (
     <>
+    <GambaUi.Portal target="controls">
+        {!started ? (
+          <>
+            <GambaUi.WagerInput value={initialWager} onChange={setInitialWager} />
+            <GambaUi.Select
+              options={MINE_SELECT}
+              value={mines}
+              onChange={setMines}
+              label={(mines) => (
+                <>{mines} Mines</>
+              )}
+            />
+            <GambaUi.PlayButton onClick={start}>
+              Start
+            </GambaUi.PlayButton>
+          </>
+        ) : (
+          <GambaUi.Button onClick={endGame}>
+            {totalGain > 0 ? 'Finish' : 'Reset'}
+          </GambaUi.Button>
+        )}
+      </GambaUi.Portal>
       <GambaUi.Portal target="screen">
         <Container2>
           <Levels>
@@ -183,7 +205,7 @@ function Mines() {
           </GambaUi.Responsive>
         </Container2>
       </GambaUi.Portal>
-      <GambaUi.Portal target="controls">
+      {/* <GambaUi.Portal target="controls">
         {!started ? (
           <>
             <GambaUi.WagerInput value={initialWager} onChange={setInitialWager} />
@@ -204,7 +226,7 @@ function Mines() {
             {totalGain > 0 ? 'Finish' : 'Reset'}
           </GambaUi.Button>
         )}
-      </GambaUi.Portal>
+      </GambaUi.Portal> */}
     </>
   )
 }
