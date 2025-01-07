@@ -10,6 +10,7 @@ import { Container, Controls, IconButton, MetaControls, Screen, Spinner, Splash 
 import { LoadingBar, useLoadingState } from './LoadingBar'
 import { ProvablyFairModal } from './ProvablyFairModal'
 import { TransactionModal } from './TransactionModal'
+import { display } from 'html2canvas/dist/types/css/property-descriptors/display'
 
 function CustomError() {
   return (
@@ -84,6 +85,8 @@ function CustomRenderer() {
       {txModal && (
         <TransactionModal onClose={() => setTxModal(false)} />
       )}
+      <div style={{display:'flex', flexDirection:'row'}}>
+
       <Container>
         <Screen>
           <Splash>
@@ -113,13 +116,15 @@ function CustomRenderer() {
           </MetaControls>
         </Screen>
         <LoadingBar />
-        <Controls>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      </Container>
+      <Controls>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexDirection: 'column'}}>
             <GambaUi.PortalTarget target="controls" />
             <GambaUi.PortalTarget target="play" />
           </div>
         </Controls>
-      </Container>
+      </div>
+             
     </>
   )
 }

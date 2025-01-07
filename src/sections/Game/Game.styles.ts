@@ -110,7 +110,7 @@ export const StyledLoadingIndicator = styled.div<{$active: boolean}>`
 `
 
 export const Controls = styled.div`
-  width: 100%;
+  width: auto;
   background: rgb(26, 27, 40);
   padding: 20px;
   color: white;
@@ -127,7 +127,6 @@ export const Controls = styled.div`
     display: flex;
     gap: 20px;
     align-items: center;
-    height: 80px;
   }
 `
 
