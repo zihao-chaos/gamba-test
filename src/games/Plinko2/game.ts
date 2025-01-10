@@ -55,6 +55,7 @@ export class Plinko {
   private replayBall: Matter.Body | null = null
   private animationId: number | null = null
   private visualizePath: boolean = false
+  private simulatedPaths:SimulationResult[] = []
 
   setVisualizePath(enabled: boolean) {
     this.visualizePath = enabled
@@ -112,6 +113,7 @@ export class Plinko {
       this.makePlinko(Matter.Common.random(-SPAWN_OFFSET_RANGE, SPAWN_OFFSET_RANGE), 0),
     )
     Matter.Runner.run(this.runner, this.engine)
+
   }
 
   cleanup() {
@@ -163,6 +165,7 @@ export class Plinko {
       this.ballComposite,
       this.bucketComposite,
     ])
+    this.simulate()
   }
 
   reset() {
@@ -189,7 +192,7 @@ export class Plinko {
     }
   }
 
-  simulate(desiredBucketIndex: number) {
+  simulate() {
     const results: Omit<SimulationResult, 'collisions'>[] = []
     const paths: {x:number,y:number}[][] = this.startPositions.map(() => [])
     const allCollisions: { frame: number, event: PlinkoContactEvent }[] = []
@@ -239,8 +242,11 @@ export class Plinko {
         })
       }
     }
+    this.simulatedPaths = finalResults
 
-    return finalResults.filter(({ bucketIndex }) => bucketIndex === desiredBucketIndex)
+
+    // fs.writeFileSync('data.json', JSON.stringify(finalResults[0].path));
+    console.log(JSON.stringify(finalResults[0].path))
   }
 
   collisionHandler = (event: Matter.IEventCollision<Matter.Engine>) => {
@@ -272,60 +278,49 @@ export class Plinko {
 
   run(desiredMultiplier: number) {
     Matter.Events.off(this.engine, 'collisionStart', this.collisionHandler)
+    console.log(desiredMultiplier)
+
     const bucket = Matter.Common.choose(
       this.bucketComposite.bodies.filter((x) => x.plugin.bucketMultiplier === desiredMultiplier),
     )
-    const bucket2 = Matter.Common.choose(
-      this.bucketComposite.bodies.filter((x) => x.plugin.bucketMultiplier === desiredMultiplier),
-    )
-    const candidates = this.simulate(bucket.plugin.bucketIndex)
-    const candidate2 = this.simulate(bucket2.plugin.bucketIndex)
+
+    const candidates = this.simulatedPaths.filter(({ bucketIndex }) => bucketIndex === bucket.plugin.bucketIndex)
+
     if (!candidates.length) throw new Error('Failed to simulate desired outcome')
 
     const chosen = Matter.Common.choose(candidates)
-    const chosen2 = Matter.Common.choose(candidate2)
-
-    console.log("Chosen path:", candidates)
 
     if (this.visualizePath) {
-      console.log("Chosen path:", candidates)
+      console.log("Chosen path:", chosen.path)
     }
 
-    this.currentPath = chosen.path
-    this.currentFrame = 0
 
     const chosenIndex = chosen.plinkoIndex
     const chosenCollisions = chosen.collisions.filter(({event}) => {
       return event.plinko && event.plinko.plugin.startPositionIndex === chosenIndex
     })
-    this.replayCollisions = chosenCollisions
 
     const ball = this.makePlinko(this.startPositions[chosenIndex], chosenIndex)
     Matter.Composite.add(this.ballComposite, ball)
-    this.replayBall = ball
 
-    Matter.Runner.stop(this.runner)
-    this.startReplayAnimation()
+    this.startReplayAnimation(ball, chosenCollisions, chosen.path)
+
   }
 
-  private startReplayAnimation() {
-    if (this.animationId !== null) {
-      cancelAnimationFrame(this.animationId)
-    }
-    const animate = () => {
-      if (!this.currentPath || !this.replayBall) return
-      if (this.currentFrame >= this.currentPath.length) {
-        return
-      }
-      const pos = this.currentPath[this.currentFrame]
-      Matter.Body.setPosition(this.replayBall, { x: pos.x, y: pos.y })
+  private async startReplayAnimation(ball: Matter.Body, chosenCollisions:{frame:number, event:PlinkoContactEvent}[], path:{x:number,y:number}[]) {
 
-      const frameCollisions = this.replayCollisions.filter(c => c.frame === this.currentFrame)
+    let frame = 0
+    const animate = () => {
+      const pos = path[frame]
+      if(!pos.x) return
+      Matter.Body.setPosition(ball, { x: pos.x, y: pos.y })
+
+      const frameCollisions = chosenCollisions.filter(c => c.frame === frame)
       frameCollisions.forEach(({event}) => {
         this.props.onContact(event)
       })
 
-      this.currentFrame++
+      frame++
       this.animationId = requestAnimationFrame(animate)
     }
     this.animationId = requestAnimationFrame(animate)
