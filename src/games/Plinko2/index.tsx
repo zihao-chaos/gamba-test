@@ -3,7 +3,7 @@ import { useGamba } from 'gamba-react-v2'
 import React, { useEffect } from 'react'
 import { PEG_RADIUS, PLINKO_RAIUS, Plinko as PlinkoGame, PlinkoProps, barrierHeight, barrierWidth, bucketHeight } from './game'
 
-import BUMP from './bump-fart.mp3'
+import BUMP from './dry-fart.mp3'
 import FALL from './lose-fart.mp3'
 import WIN from './win-fart.mp3'
 
