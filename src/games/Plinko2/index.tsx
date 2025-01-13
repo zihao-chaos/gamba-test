@@ -3,9 +3,9 @@ import { useGamba } from 'gamba-react-v2'
 import React, { useEffect } from 'react'
 import { PEG_RADIUS, PLINKO_RAIUS, Plinko as PlinkoGame, PlinkoProps, barrierHeight, barrierWidth, bucketHeight } from './game'
 
-import BUMP from './fart.mp3'
-import FALL from './fall.mp3'
-import WIN from './win.mp3'
+import BUMP from './bump-fart.mp3'
+import FALL from './lose-fart.mp3'
+import WIN from './win-fart.mp3'
 
 function usePlinko(props: PlinkoProps, deps: React.DependencyList) {
   const [plinko, set] = React.useState<PlinkoGame>(null!)
@@ -67,6 +67,7 @@ export default function Plinko2() {
     await game.play({ wager, bet })
     const result = await game.result()
     // plinko.reset()
+    console.log(result)
     plinko.run(result.multiplier)
   }
 
@@ -119,7 +120,7 @@ export default function Plinko2() {
                     }
                     ctx.scale(1 + animation * .4, 1 + animation * .4)
                     const pegHue = (position.y + position.x + Date.now() * .05) % 360
-                    ctx.fillStyle = '#000000'
+                    ctx.fillStyle = '#FF6B2F'
                     ctx.beginPath()
                     ctx.arc(0, 0, PEG_RADIUS + 4, 0, Math.PI * 2)
                     ctx.fill()
